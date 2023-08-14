@@ -2,7 +2,7 @@ import re
 from math import floor
 
 
-def auto_lookup(obj, lookup_table, soup):
+def auto_lookup(lookup_table, soup, obj = {}):
     for field, selector in lookup_table.items():
         value = ""
         prop = "text"
@@ -44,6 +44,7 @@ def auto_lookup(obj, lookup_table, soup):
         else:
             value = value.strip()
         obj[field] = value
+    return obj
 
 
 def parse_dur_str(str):
