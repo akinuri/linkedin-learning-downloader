@@ -15,11 +15,15 @@ get_contents(soup, course_info)
 
 course_output_str = build_output_str(course_info)
 
+with open("Info.txt", "w", encoding="utf8") as file:
+    file.write(course_output_str)
+
 
 # pprint(course_info, sort_dicts=False)
 
-print(course_output_str)
+# print(course_output_str)
 
 
+print("Done.")
 input()
 
