@@ -1,4 +1,5 @@
 import re
+from math import floor
 
 
 def auto_lookup(obj, lookup_table, soup):
@@ -43,4 +44,48 @@ def auto_lookup(obj, lookup_table, soup):
         else:
             value = value.strip()
         obj[field] = value
+
+
+def parse_dur_str(str):
+    dur_h = 0
+    dur_m = 0
+    dur_s = 0
+    match = re.search(r"(?:(\d+)h ?)?(?:(\d+)m ?)?(?:(\d+)s)?", str)
+    if match:
+        dur_h = int(match.group(1) or dur_h)
+        dur_m = int(match.group(2) or dur_m)
+        dur_s = int(match.group(3) or dur_s)
+    dur = {
+        "h" : dur_h,
+        "m" : dur_m,
+        "s" : dur_s,
+    }
+    return dur
+
+def dur_to_sec(dur):
+    return (dur["h"] * 60 * 60) + (dur["m"] * 60) + dur["s"]
+
+def sec_to_dur(sec):
+    dur_h = floor(sec / (60 * 60))
+    sec -= dur_h * 60 * 60
+    dur_m = floor(sec / 60)
+    sec -= dur_m * 60
+    dur_s = sec
+    dur = {
+        "h" : dur_h,
+        "m" : dur_m,
+        "s" : dur_s,
+    }
+    return dur
+
+def dur_to_str(dur):
+    parts = []
+    if dur["h"] != 0:
+        parts.append(str(dur["h"]) + "h")
+    if dur["m"] != 0 or dur["h"] != 0:
+        parts.append(str(dur["m"]) + "m")
+    if dur["s"] != 0 or dur["m"] != 0 or dur["h"] != 0:
+        parts.append(str(dur["s"]) + "s")
+    result = " ".join(parts)
+    return result
 
