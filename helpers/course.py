@@ -1,6 +1,9 @@
-from helpers.general import dur_to_sec, dur_to_str, parse_dur_str, sec_to_dur
+import requests
+from .general import dur_to_sec, dur_to_str, parse_dur_str, sec_to_dur
 
-course_fields_lookup_table = {
+#region ==================== INFO
+
+course_info_fields_selectors = {
     "Title" : ".top-card-layout__title",
     "Instructor" : {
         "selector" : "h2.top-card-layout__headline .top-card__headline-row-item",
@@ -29,7 +32,7 @@ course_fields_lookup_table = {
     },
 }
 
-def get_contents(soup, obj):
+def get_info_contents(soup, obj):
     chapters = []
     chaptersEls = soup.select(".toc-section")
     for chapterEl in chaptersEls:
@@ -54,8 +57,7 @@ def get_contents(soup, obj):
     obj["Contents"] = chapters
     return chapters
 
-
-def build_output_str(course):
+def build_info_output(course):
     tab = "    "
     
     top_fields = ["Title", "Instructor", "Released", "Duration", "Level"]
@@ -128,4 +130,5 @@ def build_output_str(course):
     
     return output
 
+#endregion
 

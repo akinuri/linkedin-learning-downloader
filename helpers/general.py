@@ -1,9 +1,10 @@
 import re
 from math import floor
 
+#region ==================== SOUP
 
-def auto_lookup(lookup_table, soup, obj = {}):
-    for field, selector in lookup_table.items():
+def soup_auto_select(soup, fields_selectors, obj = {}):
+    for field, selector in fields_selectors.items():
         value = ""
         prop = "text"
         if type(selector) is str:
@@ -46,6 +47,9 @@ def auto_lookup(lookup_table, soup, obj = {}):
         obj[field] = value
     return obj
 
+#endregion
+
+#region ==================== DURATION
 
 def parse_dur_str(str):
     dur_h = 0
@@ -89,4 +93,6 @@ def dur_to_str(dur):
         parts.append(str(dur["s"]) + "s")
     result = " ".join(parts)
     return result
+
+#endregion
 
