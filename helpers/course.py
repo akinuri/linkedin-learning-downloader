@@ -196,8 +196,11 @@ def get_video_json_data(course_slug, video_slug):
     return content
 
 def load_videos_urls(chapters, course_slug):
+    print("")
     for chapter in chapters:
+        print("Loading chapter: %s" % chapter["title"])
         for video in chapter["videos"]:
+            print("  %s" % video["title"])
             video_json_data = get_video_json_data(course_slug, video["slug"])
             video_metadata = video_json_data["elements"][0]["presentation"]["videoPlay"]["videoPlayMetadata"]
             streams = {}
