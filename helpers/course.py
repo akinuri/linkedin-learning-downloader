@@ -230,7 +230,7 @@ def build_video_links_output(chapters):
             }
             th, td {
                 padding: 0.3em 0.4em 0.2em;
-                border: 1px solid silver;
+                border: 1px solid hsl(0, 0%, 85%);
             }
             tr.chapter td {
                 background-color: hsla(0, 0%, 0%, 0.04);
@@ -241,20 +241,17 @@ def build_video_links_output(chapters):
             tr.video td:first-child {
                 padding-left: 2em;
             }
-            #download-progress-indicator {
-                --width: 0px;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: var(--width);
-                height: 3px;
-                background-color: forestgreen;
-                transition: width 100ms;
-                box-shadow: 0 1px 2px hsl(120deg 100% 10% / 25%),
-                            0 2px 3px hsl(0deg 0% 100% / 25%);
+            tr.downloading {
+                --progress: 0%;
+                background-image: linear-gradient(to right, hsl(120 50% 80% / 1) calc(var(--progress) - 1%), transparent calc(var(--progress) + 1%));
+            }
+            a.visited {
+                color: rgb(85, 26, 139);
+            }
+            tr:hover {
+                background-color: hsla(0, 0%, 0%, 0.03);
             }
         </style>
-        <div id="download-progress-indicator"></div>
         <table>
             <thead>
                 <tr>
@@ -337,18 +334,32 @@ def build_video_links_output(chapters):
             links.forEach(link => {
                 link.addEventListener("click", e => {
                     e.preventDefault();
-                    coverntFiletoBlobAndDownload(link.href, link.download, link.dataset.size);
+                    coverntFiletoBlobAndDownload(
+                        link.href,
+                        link.download,
+                        link.dataset.size,
+                        link,
+                    );
                 });
             });
-            const coverntFiletoBlobAndDownload = (fileURL, fileName, fileSize) => {
+            const coverntFiletoBlobAndDownload = (fileURL, fileName, fileSize, anchor) => {
+                let anchorRow = anchor.closest("tr");
                 ajax(fileURL, {
                     responseType: "arraybuffer",
-                    start: () => dpi.style.setProperty("--width", "1px"),
+                    start: () => {
+                        anchorRow.classList.add("downloading");
+                        anchorRow.style.setProperty("--progress", "1px");
+                    },
                     progress : function (e) {
                         let progress = ((e.loaded / fileSize) * 100).toFixed(1);
-                        dpi.style.setProperty("--width", progress + "%");
+                        anchorRow.style.setProperty("--progress", progress + "%");
                     },
-                    after: () => dpi.style.setProperty("--width", "0px"),
+                    after: () => {
+                        anchorRow.classList.remove("downloading");
+                        anchorRow.style.setProperty("--progress", "0px");
+                        anchorRow.removeAttribute("style");
+                        anchor.classList.add("visited");
+                    },
                     success: function () {
                         let blob = new Blob([this.response], {type:"video/mp4"})
                         const url = URL.createObjectURL(blob)
