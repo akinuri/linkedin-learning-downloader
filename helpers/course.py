@@ -158,6 +158,8 @@ def get_chapters_json_data(course_slug):
     cookies = get_user_cookies()
     headers = {"Csrf-Token" : cookies["JSESSIONID"]}
     request = requests.get(course_url, headers=headers, cookies=cookies)
+    if request.status_code != 200:
+        return request.status_code
     content = request.json()
     return content
 
@@ -385,6 +387,17 @@ def build_course_url(url_or_slug):
         return url_or_slug
     else:
         return "https://www.linkedin.com/learning/%s" % url_or_slug
+
+def get_course_slug(url_or_slug):
+    if url_or_slug.startswith("http"):
+        slug = None
+        pattern = r"^https?://(?:www.)?linkedin.com/learning/([a-z0-9]+(?:-[a-z0-9]+)*)$"
+        match = re.match(pattern, url_or_slug)
+        if match:
+            slug = match.group(1)
+        return slug
+    else:
+        return url_or_slug
 
 #endregion
 
