@@ -1,3 +1,4 @@
+import re
 import requests
 from .general import dur_to_sec, dur_to_str, parse_dur_str, sec_to_dur
 
@@ -365,6 +366,25 @@ def build_video_links_output(chapters):
     )
     html = "\n".join(html)
     return html
+
+#endregion
+
+
+#region ==================== URL
+
+def is_course_url(url):
+    if url.startswith("http"):
+        pattern = r"^https?://(?:www.)?linkedin.com/learning/[a-z0-9]+(?:-[a-z0-9]+)*$"
+        return bool(re.fullmatch(pattern, url))
+    else:
+        pattern = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        return bool(re.fullmatch(pattern, url))
+
+def build_course_url(url_or_slug):
+    if url_or_slug.startswith("http"):
+        return url_or_slug
+    else:
+        return "https://www.linkedin.com/learning/%s" % url_or_slug
 
 #endregion
 
