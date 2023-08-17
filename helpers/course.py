@@ -150,7 +150,7 @@ def get_user_cookies(path = "cookies.txt"):
                 cookies[key] = value.replace("\"", "").strip()
     return cookies
 
-def get_chapters_json_data(course_slug):
+def get_course_json_data(course_slug):
     course_url = (
         "https://www.linkedin.com/learning-api/detailedCourses"
         "?fields=chapters&q=slugs&courseSlug=%s" % course_slug
@@ -163,8 +163,7 @@ def get_chapters_json_data(course_slug):
     content = request.json()
     return content
 
-def get_videos_slugs(course_json_data):
-    chapters = []
+def collect_json_data(course_json_data):
     for _chapter in course_json_data["elements"][0]["chapters"]:
         chapter = {
             "title" : _chapter["title"],
@@ -214,7 +213,7 @@ def load_videos_urls(chapters, course_slug):
             video["streams"] = streams
             video["transcripts"] = transcripts
 
-def build_video_links_output(chapters):
+def build_course_links_output(chapters):
     html = []
     html.append(
         """

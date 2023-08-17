@@ -104,7 +104,8 @@ def prog_exit(*messages):
         print(message)
         if message != "":
             print("")
-    input("Program will close.")
+    print("Program will close.")
+    input("")
     sys.exit()
 
 def input2(
