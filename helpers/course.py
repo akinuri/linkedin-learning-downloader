@@ -243,8 +243,11 @@ def build_course_links_output(course):
                 padding: 0.3em 0.4em 0.2em;
                 border: 1px solid hsl(0, 0%%, 85%%);
             }
+            th {
+                border: 1px solid hsl(0, 0%%, 80%%);
+            }
             tr.chapter td {
-                background-color: hsla(0, 0%%, 0%%, 0.04);
+                background-color: hsla(0, 0%%, 0%%, 0.05);
                 font-weight: 600;
                 font-size: 0.9em;
                 color: hsl(0, 0%%, 0%%, 0.9);
@@ -259,8 +262,8 @@ def build_course_links_output(course):
             a.visited {
                 color: rgb(85, 26, 139);
             }
-            tr:hover {
-                background-color: hsla(0, 0%%, 0%%, 0.03);
+            tbody tr.video:hover {
+                background-color: hsl(200deg 50%% 50%% / 10%%);
             }
             tr.chapter span + img {
                 vertical-align: bottom;
@@ -299,7 +302,7 @@ def build_course_links_output(course):
         html.append(
             """
             <tr class="seperator">
-                <td colspan="4" style="height: 1em; border-left-width: 0; border-right-width: 0"></td>
+                <td colspan="4" style="height: 1em; border-left-width: 0; border-right-width: 0; border-top-width: 0"></td>
             </tr>
             """
         )
@@ -316,14 +319,22 @@ def build_course_links_output(course):
             </tr>
             """ % (str(chapter_index), chapter_title, dur_to_str(sec_to_dur(chapter["durationInSeconds"])))
         )
+        chapter_file_sizes = {}
         for index, video in enumerate(chapter["videos"]):
             streams = []
             video_index = str(index + 1).rjust(2, "0")
-            for height, stream in video["streams"].items():
+            for _, stream in video["streams"].items():
                 if stream["height"] == 0:
                     continue
+                if str(stream["height"]) not in chapter_file_sizes:
+                    chapter_file_sizes[str(stream["height"])] = 0
+                chapter_file_sizes[str(stream["height"])] += stream["size"]
                 streams.append(
-                    '<a href="%s" target="_blank" download="%s. %s.mp4" data-size="%s">%s</a> (%sM)' % (
+                    """
+                    <span style='display: inline-block; width: 90px'>
+                        <a href="%s" target="_blank" download="%s. %s.mp4" data-size="%s">%s</a> (%sM)
+                    </span>
+                    """ % (
                         stream["streamingLocations"][0]["url"],
                         video_index,
                         video["title"],
@@ -332,7 +343,7 @@ def build_course_links_output(course):
                         "{:.1f}".format(stream["size"] / 1024 / 1024)
                     )
                 )
-            streams = ", \n".join(streams)
+            streams = "\n".join(streams)
             transcripts = []
             for locale, transcript in video["transcripts"].items():
                 transcripts.append(
@@ -364,6 +375,22 @@ def build_course_links_output(course):
                     transcripts,
                 )
             )
+        file_size_totals = []
+        for height, total in chapter_file_sizes.items():
+            file_size_totals.append(
+                "<span style='display: inline-block; width: 90px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
+            )
+        file_size_totals = "\n".join(file_size_totals)
+        html.append(
+            """
+            <tr class="totals">
+                <td style="border-left-width: 0; border-right-width: 0; border-bottom-width: 0"></td>
+                <td style="border-left-width: 0; border-right-width: 0; border-bottom-width: 0"></td>
+                <td>%s</td>
+                <td style="border-right-width: 0; border-bottom-width: 0"></td>
+            </tr>
+            """ % file_size_totals
+        )
     html.append(
         """
             </tbody>
