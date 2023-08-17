@@ -153,7 +153,7 @@ def get_user_cookies(path = "cookies.txt"):
 def get_course_json_data(course_slug):
     course_url = (
         "https://www.linkedin.com/learning-api/detailedCourses"
-        "?fields=chapters&q=slugs&courseSlug=%s" % course_slug
+        "?fields=title,slug,chapters&q=slugs&courseSlug=%s" % course_slug
     )
     cookies = get_user_cookies()
     headers = {"Csrf-Token" : cookies["JSESSIONID"]}
@@ -164,23 +164,28 @@ def get_course_json_data(course_slug):
     return content
 
 def collect_json_data(course_json_data):
+    course = {
+        "title"             : course_json_data["elements"][0]["title"],
+        "slug"              : course_json_data["elements"][0]["slug"],
+        "chapters"          : [],
+    }
     for _chapter in course_json_data["elements"][0]["chapters"]:
         chapter = {
-            "title" : _chapter["title"],
+            "title"             : _chapter["title"],
             "durationInSeconds" : _chapter["durationInSeconds"],
-            "videos" : [],
+            "videos"            : [],
         }
         for _video in _chapter["videos"]:
             video = {
-                "title" : _video["title"],
-                "slug" : _video["slug"],
+                "title"             : _video["title"],
+                "slug"              : _video["slug"],
                 "durationInSeconds" : _video["durationInSeconds"],
-                "streams" : {},
-                "transcripts" : {},
+                "streams"           : {},
+                "transcripts"       : {},
             }
             chapter["videos"].append(video)
-        chapters.append(chapter)
-    return chapters
+        course["chapters"].append(chapter)
+    return course
 
 def get_video_json_data(course_slug, video_slug):
     video_url = (
@@ -194,12 +199,14 @@ def get_video_json_data(course_slug, video_slug):
     content = request.json()
     return content
 
-def load_videos_urls(chapters, course_slug):
+def load_videos_urls(course, course_slug):
     print("")
-    for chapter in chapters:
-        print("Loading chapter: %s" % chapter["title"])
+    print("Loading video URLs")
+    for chapter in course["chapters"]:
+        print("")
+        print(chapter["title"])
         for video in chapter["videos"]:
-            print("  %s" % video["title"])
+            print("    %s" % video["title"])
             video_json_data = get_video_json_data(course_slug, video["slug"])
             video_metadata = video_json_data["elements"][0]["presentation"]["videoPlay"]["videoPlayMetadata"]
             streams = {}
@@ -213,10 +220,11 @@ def load_videos_urls(chapters, course_slug):
             video["streams"] = streams
             video["transcripts"] = transcripts
 
-def build_course_links_output(chapters):
+def build_course_links_output(course):
     html = []
     html.append(
         """
+        <title>%s</title>
         <style>
             body {
                 font-family: sans-serif;
@@ -228,32 +236,33 @@ def build_course_links_output(chapters):
                 font-size: inherit;
             }
             th {
-                background-color: hsla(0, 0%, 0%, 0.1);
+                background-color: hsla(0, 0%%, 0%%, 0.1);
             }
             th, td {
                 padding: 0.3em 0.4em 0.2em;
-                border: 1px solid hsl(0, 0%, 85%);
+                border: 1px solid hsl(0, 0%%, 85%%);
             }
             tr.chapter td {
-                background-color: hsla(0, 0%, 0%, 0.04);
+                background-color: hsla(0, 0%%, 0%%, 0.04);
                 font-weight: 600;
                 font-size: 0.9em;
-                color: hsl(0deg 0% 0% / 90%);
+                color: hsl(0, 0%%, 0%%, 0.9);
             }
             tr.video td:first-child {
                 padding-left: 2em;
             }
             tr.downloading {
-                --progress: 0%;
-                background-image: linear-gradient(to right, hsl(120 50% 80% / 1) calc(var(--progress) - 1%), transparent calc(var(--progress) + 1%));
+                --progress: 0%%;
+                background-image: linear-gradient(to right, hsl(120, 50%%, 80%%) calc(var(--progress) - 1%%), transparent calc(var(--progress) + 1%%));
             }
             a.visited {
                 color: rgb(85, 26, 139);
             }
             tr:hover {
-                background-color: hsla(0, 0%, 0%, 0.03);
+                background-color: hsla(0, 0%%, 0%%, 0.03);
             }
         </style>
+        <h1><a href="%s" target="_blank">%s</a></h1>
         <table>
             <thead>
                 <tr>
@@ -264,25 +273,35 @@ def build_course_links_output(chapters):
                 </tr>
             </thead>
             <tbody>
-        """
+        """ % (course["title"], build_course_url(course["slug"]), course["title"])
     )
-    for chapter in chapters:
+    for index, chapter in enumerate(course["chapters"]):
+        chapter_title = chapter["title"]
+        chapter_parts = chapter_title.split(". ")
+        chapter_parts = [None]*(2-len(chapter_parts)) + chapter_parts
+        chapter_index, chapter_title = chapter_parts
+        if chapter_title in ["Introduction", "Welcome"]:
+            chapter_index = 0
+        if chapter_index is None:
+            chapter_index = index
         html.append(
             """
             <tr class="chapter">
-                <td>%s</td>
+                <td>%s. %s</td>
                 <td>%s</td>
                 <td></td>
                 <td></td>
             </tr>
-            """ % (chapter["title"], dur_to_str(sec_to_dur(chapter["durationInSeconds"])))
+            """ % (str(chapter_index), chapter_title, dur_to_str(sec_to_dur(chapter["durationInSeconds"])))
         )
         for index, video in enumerate(chapter["videos"]):
             streams = []
             video_index = str(index + 1).rjust(2, "0")
             for height, stream in video["streams"].items():
+                if height == "0":
+                    continue
                 streams.append(
-                    '<a href="%s" target="_blank" download="%s - %s.mp4" data-size="%s">%s</a> (%sM)' % (
+                    '<a href="%s" target="_blank" download="%s. %s.mp4" data-size="%s">%s</a> (%sM)' % (
                         stream["streamingLocations"][0]["url"],
                         video_index,
                         video["title"],
@@ -295,7 +314,7 @@ def build_course_links_output(chapters):
             transcripts = []
             for locale, transcript in video["transcripts"].items():
                 transcripts.append(
-                    '<a href="%s" download="%s - %s.vtt">%s.vtt</a>' % (
+                    '<a href="%s" download="%s. %s.vtt">%s.vtt</a>' % (
                         transcript["captionFile"],
                         video_index,
                         video["title"],
@@ -306,7 +325,7 @@ def build_course_links_output(chapters):
             html.append(
                 """
                 <tr class="video">
-                    <td>%s - %s</td>
+                    <td>%s. %s</td>
                     <td>%s</td>
                     <td>
                         %s
