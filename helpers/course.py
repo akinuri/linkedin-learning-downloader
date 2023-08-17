@@ -262,6 +262,17 @@ def build_course_links_output(course):
             tr:hover {
                 background-color: hsla(0, 0%%, 0%%, 0.03);
             }
+            tr.chapter span + img {
+                vertical-align: bottom;
+                opacity: 0.2;
+                cursor: pointer;
+            }
+            tr.chapter span + img:hover {
+                opacity: 0.6;
+            }
+            tr.chapter span + img:active {
+                opacity: 0.4;
+            }
         </style>
         <h1><a href="%s" target="_blank">%s</a></h1>
         <table>
@@ -288,7 +299,10 @@ def build_course_links_output(course):
         html.append(
             """
             <tr class="chapter">
-                <td>%s. %s</td>
+                <td>
+                    <span>%s. %s</span>
+                    <img title="Copy chapter name" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAPpJREFUOE/t0z0rxnEUxvHPjZmiZDAZlMlwM6AMkslChG6ZvQe7xeBFeAVGJZtkk4ciDwklzxJKEZ36/evfnX8p2Zz5nO/1+53rOiW/rFLBfCcGMYBaRN8FVvCCYxzgswjQgzGMoiaJHGIJbQm2ie0MUIdmNOAdHRjHdO6FO1hEO26whbUMUI9hdOMZ1+jFZA4QA/M4wUMSOssAjZhCH25xmmB5wFMafkV8Zw8LGaAJM+jHFY7QhYmCJe9iHbP/gD/YwVDydxlhV2uBCxGkc6xWuzCCFkRMIw9xB1EfuMQG7hGZCIG7akAF5W9U35Lvc9jHY9ZTdEw/PvIvnYJTEXR1xysAAAAASUVORK5CYII=" />
+                </td>
                 <td>%s</td>
                 <td></td>
                 <td></td>
@@ -351,7 +365,12 @@ def build_course_links_output(course):
             function ajax(e,s){s.method=s.method||"GET",s.async=s.async||!0,s.user=s.user||null,s.password=s.password||null,s.data=s.data||null,s.responseType=s.responseType||"text";let a=new XMLHttpRequest;if(a.responseType=s.responseType,a.open(s.method,e,s.async,s.user,s.password),s.headers)for(let t in s.headers){let n=s.headers[t];a.setRequestHeader(t,n)}if(s.start&&(a.onloadstart=s.start.bind(a)),s.progress&&(a.onprogress=function(e){s.progress.call(a,e)}),s.uploadProgress&&(a.upload.onprogress=function(e){s.uploadProgress.call(a,e)}),s.after&&(a.onloadend=function(){s.after.call(this)}),(s.success||s.fail)&&(a.onreadystatechange=function(){a.readyState==XMLHttpRequest.DONE&&(200==a.status?s.success&&s.success.call(this):s.fail&&s.fail.call(this))}),s.timeout&&(a.timeout=s.timeout),s.data&&!(s.data instanceof FormData)){let o=new FormData;for(let r in s.data)o.append(r,s.data[r]);s.data=o}return a.send(s.data),a}
         </script>
         <script>
-            let dpi = document.querySelector("#download-progress-indicator");
+            let btns = document.querySelectorAll("tr.chapter span + img");
+            btns.forEach(btn => {
+                btn.addEventListener("click", e => {
+                    navigator.clipboard.writeText(btn.previousElementSibling.innerText);
+                });
+            });
             let links = document.querySelectorAll("a[download]");
             links.forEach(link => {
                 link.addEventListener("click", e => {
