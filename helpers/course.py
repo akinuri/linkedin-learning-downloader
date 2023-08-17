@@ -1,6 +1,6 @@
 import re
 import requests
-from .general import dur_to_sec, dur_to_str, parse_dur_str, sec_to_dur
+from .general import dur_to_sec, dur_to_str, parse_dur_str, prog_exit, sec_to_dur
 
 #region ==================== INFO
 
@@ -154,7 +154,11 @@ def get_course_json_data(course_slug):
     )
     cookies = get_user_cookies()
     headers = {"Csrf-Token" : cookies["JSESSIONID"]}
-    request = requests.get(course_url, headers=headers, cookies=cookies)
+    try:
+        request = requests.get(course_url, headers=headers, cookies=cookies)
+    except Exception as e:
+        print(e)
+        prog_exit()
     if request.status_code != 200:
         return request.status_code
     content = request.json()
@@ -198,7 +202,7 @@ def get_video_json_data(course_slug, video_slug):
 
 def load_videos_urls(course, course_slug):
     print("")
-    print("Loading video URLs")
+    print("Loading video URLs...")
     for chapter in course["chapters"]:
         print("")
         print(chapter["title"])
@@ -295,7 +299,7 @@ def build_course_links_output(course):
             streams = []
             video_index = str(index + 1).rjust(2, "0")
             for height, stream in video["streams"].items():
-                if height == "0":
+                if stream["height"] == 0:
                     continue
                 streams.append(
                     '<a href="%s" target="_blank" download="%s. %s.mp4" data-size="%s">%s</a> (%sM)' % (
