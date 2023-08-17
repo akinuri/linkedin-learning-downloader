@@ -298,6 +298,13 @@ def build_course_links_output(course):
             chapter_index = index
         html.append(
             """
+            <tr class="seperator">
+                <td colspan="4" style="height: 1em; border-left-width: 0; border-right-width: 0"></td>
+            </tr>
+            """
+        )
+        html.append(
+            """
             <tr class="chapter">
                 <td>
                     <span>%s. %s</span>
