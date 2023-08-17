@@ -103,14 +103,11 @@ def build_info_output(course):
     
     for index, chapter in enumerate(course["Contents"]):
         chapter_title_parts = chapter["Title"].split(". ")
-        chapter_title_parts = chapter_title_parts + ([None] * (2 - len(chapter_title_parts)))
+        chapter_title_parts = ([None] * (2 - len(chapter_title_parts))) + chapter_title_parts
         chapter_order, chapter_title = chapter_title_parts
-        if chapter_order and chapter_title is None:
-            chapter_title = chapter_order
-            chapter_order = None
         if chapter_title in ["Introduction", "Welcome"]:
             chapter_order = "0"
-        elif chapter_title == "Conclusion":
+        elif chapter_order is None and chapter_title == "Conclusion":
             chapter_order = str(index)
         if is_contents_double_digit:
             chapter_order = chapter_order.rjust(2, "0")
