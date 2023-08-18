@@ -150,7 +150,7 @@ def get_user_cookies(path = "cookies.txt"):
 def get_course_json_data(course_slug):
     course_url = (
         "https://www.linkedin.com/learning-api/detailedCourses"
-        "?fields=title,slug,chapters&q=slugs&courseSlug=%s" % course_slug
+        "?fields=title,slug,chapters,durationInSeconds&q=slugs&courseSlug=%s" % course_slug
     )
     cookies = get_user_cookies()
     headers = {"Csrf-Token" : cookies["JSESSIONID"]}
@@ -168,6 +168,7 @@ def collect_json_data(course_json_data):
     course = {
         "title"             : course_json_data["elements"][0]["title"],
         "slug"              : course_json_data["elements"][0]["slug"],
+        "durationInSeconds" : course_json_data["elements"][0]["durationInSeconds"],
         "chapters"          : [],
     }
     for _chapter in course_json_data["elements"][0]["chapters"]:
@@ -290,6 +291,7 @@ def build_course_links_output(course):
             <tbody>
         """ % (course["title"], build_course_url(course["slug"]), course["title"])
     )
+    course_file_sizes = {}
     for index, chapter in enumerate(course["chapters"]):
         chapter_title = chapter["title"]
         chapter_parts = chapter_title.split(". ")
@@ -377,6 +379,9 @@ def build_course_links_output(course):
             )
         file_size_totals = []
         for height, total in chapter_file_sizes.items():
+            if height not in course_file_sizes:
+                course_file_sizes[height] = 0
+            course_file_sizes[height] += total
             file_size_totals.append(
                 "<span style='display: inline-block; width: 90px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
             )
@@ -391,6 +396,29 @@ def build_course_links_output(course):
             </tr>
             """ % file_size_totals
         )
+    file_size_totals = []
+    for height, total in course_file_sizes.items():
+        file_size_totals.append(
+            "<span style='display: inline-block; width: 90px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
+        )
+    file_size_totals = "\n".join(file_size_totals)
+    html.append(
+        """
+        <tr class="seperator">
+            <td colspan="4" style="height: 1em; border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0"></td>
+        </tr>
+        """
+    )
+    html.append(
+        """
+        <tr class="totals">
+            <td style="border-left-width: 0; border-right-width: 0; border-bottom-width: 0; border-top-width: 0"></td>
+            <td>%s</td>
+            <td>%s</td>
+            <td style="border-right-width: 0; border-bottom-width: 0; border-top-width: 0"></td>
+        </tr>
+        """ % (dur_to_str(sec_to_dur(course["durationInSeconds"])), file_size_totals)
+    )
     html.append(
         """
             </tbody>
