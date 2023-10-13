@@ -147,6 +147,28 @@ def get_user_cookies(path = "cookies.txt"):
                 cookies[key] = value.replace("\"", "").strip()
     return cookies
 
+def get_course_page_html(course_slug):
+    course_url = "https://www.linkedin.com/learning/%s" % course_slug
+    cookies = get_user_cookies()
+    headers = {"Csrf-Token" : cookies["JSESSIONID"]}
+    try:
+        request = requests.get(course_url, headers=headers, cookies=cookies)
+    except Exception as e:
+        print(e)
+        prog_exit()
+    if request.status_code != 200:
+        return request.status_code
+    content = request.text
+    return content
+
+def get_course_page_exercise_file_url(page_html):
+    # what if there are multiple files?
+    url = re.search(r"&quot;url&quot;:&quot;(https://www\.linkedin\.com/ambry/.+?)&quot;", page_html)
+    if url:
+        url = url.group(1)
+        url = url.replace("&#61;", "=");
+    return url
+
 def get_course_json_data(course_slug):
     course_url = (
         "https://www.linkedin.com/learning-api/detailedCourses"
@@ -222,6 +244,16 @@ def load_videos_urls(course, course_slug):
                 transcripts[locale] = _transcript
             video["streams"] = streams
             video["transcripts"] = transcripts
+
+def load_html_exercise_file_url(course, course_slug):
+    html = get_course_page_html(course_slug)
+    if isinstance(html, int):
+        print("")
+        print("Request to the course page URL failed: %s" % str(html))
+        print("")
+        return
+    url = get_course_page_exercise_file_url(html)
+    course["exerciseFileHtmlUrl"] = url
 
 def build_course_links_output(course):
     html = []
