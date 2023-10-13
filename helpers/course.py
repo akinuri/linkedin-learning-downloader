@@ -265,6 +265,7 @@ def build_course_links_output(course):
                 font-family: sans-serif;
                 font-size: 14px;
                 margin: 1em;
+                padding-bottom: 5em;
             }
             table {
                 border-collapse: collapse;
@@ -312,6 +313,40 @@ def build_course_links_output(course):
             }
         </style>
         <h1><a href="%s" target="_blank">%s</a></h1>
+        """ % (course["title"], build_course_url(course["slug"]), course["title"])
+    )
+    if len(course["exerciseFiles"]) > 0:
+        html.append(
+            """
+            <div style="margin: 2em 0">
+                <h2 style="margin-bottom: 0.5em">Exercise Files</h2>
+                <ul style="margin-top: 0.5em; line-height: 1.5">
+            """
+        )
+        for file in course["exerciseFiles"]:
+            html.append(
+                """
+                <li>
+                    <a href="%s" download>%s</a> (%sM)
+                </li>
+                """ % (file["url"], file["name"], "{:.1f}".format(file["sizeInBytes"] / 1024 / 1024))
+            )
+        if "exerciseFileHtmlUrl" in course:
+            html.append(
+                """
+                <li>
+                    <a href="%s" target="_blank">URL from HTML</a>
+                </li>
+                """ % (course["exerciseFileHtmlUrl"])
+            )
+        html.append(
+            """
+                </ul>
+            </div>
+            """
+        )
+    html.append(
+        """
         <table>
             <thead>
                 <tr>
@@ -322,7 +357,7 @@ def build_course_links_output(course):
                 </tr>
             </thead>
             <tbody>
-        """ % (course["title"], build_course_url(course["slug"]), course["title"])
+        """
     )
     course_file_sizes = {}
     for index, chapter in enumerate(course["chapters"]):
@@ -483,18 +518,24 @@ def build_course_links_output(course):
                 ajax(fileURL, {
                     responseType: "arraybuffer",
                     start: () => {
-                        anchorRow.classList.add("downloading");
-                        anchorRow.style.setProperty("--progress", "1px");
+                        if (anchorRow) {
+                            anchorRow.classList.add("downloading");
+                            anchorRow.style.setProperty("--progress", "1px");
+                        }
                     },
                     progress : function (e) {
-                        let progress = ((e.loaded / fileSize) * 100).toFixed(1);
-                        anchorRow.style.setProperty("--progress", progress + "%");
+                        if (anchorRow) {
+                            let progress = ((e.loaded / fileSize) * 100).toFixed(1);
+                            anchorRow.style.setProperty("--progress", progress + "%");
+                        }
                     },
                     after: () => {
-                        anchorRow.classList.remove("downloading");
-                        anchorRow.style.setProperty("--progress", "0px");
-                        anchorRow.removeAttribute("style");
-                        anchor.classList.add("visited");
+                        if (anchorRow) {
+                            anchorRow.classList.remove("downloading");
+                            anchorRow.style.setProperty("--progress", "0px");
+                            anchorRow.removeAttribute("style");
+                            anchor.classList.add("visited");
+                        }
                     },
                     success: function () {
                         let blob = new Blob([this.response], {type:"video/mp4"})
