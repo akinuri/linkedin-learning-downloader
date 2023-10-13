@@ -150,7 +150,7 @@ def get_user_cookies(path = "cookies.txt"):
 def get_course_json_data(course_slug):
     course_url = (
         "https://www.linkedin.com/learning-api/detailedCourses"
-        "?fields=title,slug,chapters,durationInSeconds&q=slugs&courseSlug=%s" % course_slug
+        "?fields=title,slug,chapters,durationInSeconds,exerciseFiles,exerciseFileUrls&q=slugs&courseSlug=%s" % course_slug
     )
     cookies = get_user_cookies()
     headers = {"Csrf-Token" : cookies["JSESSIONID"]}
@@ -169,6 +169,7 @@ def collect_json_data(course_json_data):
         "title"             : course_json_data["elements"][0]["title"],
         "slug"              : course_json_data["elements"][0]["slug"],
         "durationInSeconds" : course_json_data["elements"][0]["durationInSeconds"],
+        "exerciseFiles"     : course_json_data["elements"][0]["exerciseFiles"],
         "chapters"          : [],
     }
     for _chapter in course_json_data["elements"][0]["chapters"]:
