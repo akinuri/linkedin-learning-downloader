@@ -522,28 +522,33 @@ def build_course_links_output(course):
                     responseType: "arraybuffer",
                     start: () => {
                         anchor.dataset.downloading = "true";
-                        if (anchorRow) {
+                        if (anchorRow && fileSize) {
                             anchorRow.classList.add("downloading");
                             anchorRow.style.setProperty("--progress", "1px");
                         }
                     },
                     progress : function (e) {
-                        if (anchorRow) {
+                        if (anchorRow && fileSize) {
                             let progress = ((e.loaded / fileSize) * 100).toFixed(1);
                             anchorRow.style.setProperty("--progress", progress + "%");
                         }
                     },
                     after: () => {
                         anchor.dataset.downloading = "false";
-                        if (anchorRow) {
+                        anchor.classList.add("visited");
+                        if (anchorRow && fileSize) {
                             anchorRow.classList.remove("downloading");
                             anchorRow.style.setProperty("--progress", "0px");
                             anchorRow.removeAttribute("style");
-                            anchor.classList.add("visited");
                         }
                     },
                     success: function () {
-                        let blob = new Blob([this.response], {type:"video/mp4"})
+                        const types = {
+                            "mp4" : "video/mp4",
+                            "vtt" : "text/vtt",
+                        };
+                        const ext = fileName.split(".").pop()
+                        let blob = new Blob([this.response], {type: types[ext]})
                         const url = URL.createObjectURL(blob)
                         const a = document.createElement('a')
                         a.style.display = 'none'
