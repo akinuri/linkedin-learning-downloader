@@ -514,10 +514,14 @@ def build_course_links_output(course):
                 });
             });
             const coverntFiletoBlobAndDownload = (fileURL, fileName, fileSize, anchor) => {
+                if (anchor.dataset.downloading == "true") {
+                    return;
+                }
                 let anchorRow = anchor.closest("tr");
                 ajax(fileURL, {
                     responseType: "arraybuffer",
                     start: () => {
+                        anchor.dataset.downloading = "true";
                         if (anchorRow) {
                             anchorRow.classList.add("downloading");
                             anchorRow.style.setProperty("--progress", "1px");
@@ -530,6 +534,7 @@ def build_course_links_output(course):
                         }
                     },
                     after: () => {
+                        anchor.dataset.downloading = "false";
                         if (anchorRow) {
                             anchorRow.classList.remove("downloading");
                             anchorRow.style.setProperty("--progress", "0px");
