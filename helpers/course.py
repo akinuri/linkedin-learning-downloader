@@ -239,9 +239,10 @@ def load_videos_urls(course, course_slug):
                 streams[ _stream["height"] ] = _stream
             streams = dict(sorted(streams.items()))
             transcripts = {}
-            for _transcript in video_metadata["transcripts"]:
-                locale = "%s-%s" % (_transcript["locale"]["language"], _transcript["locale"]["country"])
-                transcripts[locale] = _transcript
+            if "transcripts" in video_metadata:
+                for _transcript in video_metadata["transcripts"]:
+                    locale = "%s-%s" % (_transcript["locale"]["language"], _transcript["locale"]["country"])
+                    transcripts[locale] = _transcript
             video["streams"] = streams
             video["transcripts"] = transcripts
 
