@@ -447,6 +447,7 @@ def build_course_links_output(course):
                 )
             )
         file_size_totals = []
+        chapter_file_sizes = dict(sorted(chapter_file_sizes.items(), key=lambda x: int(x[0])))
         for height, total in chapter_file_sizes.items():
             if height not in course_file_sizes:
                 course_file_sizes[height] = 0
@@ -466,6 +467,7 @@ def build_course_links_output(course):
             """ % file_size_totals
         )
     file_size_totals = []
+    course_file_sizes = dict(sorted(course_file_sizes.items(), key=lambda x: int(x[0])))
     for height, total in course_file_sizes.items():
         file_size_totals.append(
             "<span style='display: inline-block; width: 90px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
