@@ -161,13 +161,10 @@ def get_course_page_html(course_slug):
     content = request.text
     return content
 
-def get_course_page_exercise_file_url(page_html):
-    # what if there are multiple files?
-    url = re.search(r"&quot;url&quot;:&quot;(https://www\.linkedin\.com/ambry/.+?)&quot;", page_html)
-    if url:
-        url = url.group(1)
-        url = url.replace("&#61;", "=");
-    return url
+def get_course_page_exercise_file_urls(page_html):
+    urls = re.findall(r"&quot;url&quot;:&quot;(https://www\.linkedin\.com/ambry/.+?)&quot;", page_html)
+    cleaned_urls = [url.replace("&#61;", "=") for url in urls]
+    return cleaned_urls
 
 def get_course_json_data(course_slug):
     course_url = (
@@ -246,15 +243,15 @@ def load_videos_urls(course, course_slug):
             video["streams"] = streams
             video["transcripts"] = transcripts
 
-def load_html_exercise_file_url(course, course_slug):
+def load_html_exercise_file_urls(course, course_slug):
     html = get_course_page_html(course_slug)
     if isinstance(html, int):
         print("")
         print("Request to the course page URL failed: %s" % str(html))
         print("")
         return
-    url = get_course_page_exercise_file_url(html)
-    course["exerciseFileHtmlUrl"] = url
+    urls = get_course_page_exercise_file_urls(html)
+    course["exerciseFilesFromPage"] = urls
 
 def build_course_links_output(course):
     html = []
@@ -332,13 +329,13 @@ def build_course_links_output(course):
                 </li>
                 """ % (file["url"], file["name"], "{:.1f}".format(file["sizeInBytes"] / 1024 / 1024))
             )
-        if "exerciseFileHtmlUrl" in course:
+        for index, url in enumerate(course["exerciseFilesFromPage"]):
             html.append(
                 """
                 <li>
-                    <a href="%s" target="_blank">URL from HTML</a>
+                    <a href="%s" target="_blank">File #%d</a>
                 </li>
-                """ % (course["exerciseFileHtmlUrl"])
+                """ % (url, index + 1)
             )
         html.append(
             """

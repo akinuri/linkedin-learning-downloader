@@ -16,7 +16,7 @@ def main():
     
     course_links = collect_json_data(course_json_data)
     load_videos_urls(course_links, course_slug)
-    load_html_exercise_file_url(course_links, course_slug)
+    load_html_exercise_file_urls(course_links, course_slug)
     
     course_links_output = build_course_links_output(course_links)
     
