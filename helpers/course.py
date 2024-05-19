@@ -399,7 +399,7 @@ def build_course_links_output(course):
                 chapter_file_sizes[str(stream["height"])] += stream["size"]
                 streams.append(
                     """
-                    <span style='display: inline-block; width: 90px'>
+                    <span style='display: inline-block; width: 95px'>
                         <a href="%s" target="_blank" download="%s. %s.mp4" data-size="%s">%s</a> (%sM)
                     </span>
                     """ % (
@@ -450,7 +450,7 @@ def build_course_links_output(course):
                 course_file_sizes[height] = 0
             course_file_sizes[height] += total
             file_size_totals.append(
-                "<span style='display: inline-block; width: 90px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
+                "<span style='display: inline-block; width: 95px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
             )
         file_size_totals = "\n".join(file_size_totals)
         html.append(
@@ -467,7 +467,7 @@ def build_course_links_output(course):
     course_file_sizes = dict(sorted(course_file_sizes.items(), key=lambda x: int(x[0])))
     for height, total in course_file_sizes.items():
         file_size_totals.append(
-            "<span style='display: inline-block; width: 90px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
+            "<span style='display: inline-block; width: 95px'>%s (%sM)</span>" % (height, "{:.1f}".format(total / 1024 / 1024))
         )
     file_size_totals = "\n".join(file_size_totals)
     html.append(
