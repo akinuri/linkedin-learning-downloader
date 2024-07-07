@@ -6,6 +6,18 @@ I usually use the tool [knowbee/llvd](https://github.com/knowbee/llvd) to do thi
 
 I'll be taking a more layered approach to automating this process. So a fail at some layer shouldn't affect the end goal. If one is able to watch the videos, then one should be able to download them no matter what. A failure in the tool shouldn't prevent this.
 
+## Dependencies
+
+- [requests · PyPI](https://pypi.org/project/requests/)
+- [beautifulsoup4 · PyPI](https://pypi.org/project/beautifulsoup4/)
+
+```
+pip install requests
+```
+```
+pip install beautifulsoup4
+```
+
 ## Layers
 
 ### 1. Download Links
