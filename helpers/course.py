@@ -107,7 +107,7 @@ def build_info_output(course):
         chapter_order, chapter_title = chapter_title_parts
         if chapter_title in ["Introduction", "Welcome"]:
             chapter_order = "0"
-        elif chapter_order is None and chapter_title == "Conclusion":
+        if chapter_order is None:
             chapter_order = str(index)
         if is_contents_double_digit:
             chapter_order = chapter_order.rjust(2, "0")
@@ -358,6 +358,7 @@ def build_course_links_output(course):
         """
     )
     course_file_sizes = {}
+    is_chapters_double_digit = len(course["chapters"]) > 9;
     for index, chapter in enumerate(course["chapters"]):
         chapter_title = chapter["title"]
         chapter_parts = chapter_title.split(". ")
@@ -367,6 +368,8 @@ def build_course_links_output(course):
             chapter_index = 0
         if chapter_index is None:
             chapter_index = index
+        if is_chapters_double_digit:
+            chapter_index = str(chapter_index).rjust(2, "0")
         html.append(
             """
             <tr class="seperator">
