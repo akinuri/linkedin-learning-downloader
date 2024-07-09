@@ -102,9 +102,13 @@ def build_info_output(course):
     is_contents_double_digit = len(course["Contents"]) - 1 > 9;
     
     for index, chapter in enumerate(course["Contents"]):
-        chapter_title_parts = chapter["Title"].split(". ")
-        chapter_title_parts = ([None] * (2 - len(chapter_title_parts))) + chapter_title_parts
-        chapter_order, chapter_title = chapter_title_parts
+        match = re.match(r'^(\d+)\.\s*(.*)', chapter["Title"])
+        if match:
+            chapter_order = match.group(1)
+            chapter_title = match.group(2)
+        else:
+            chapter_order = None
+            chapter_title = chapter["Title"]
         if chapter_title in ["Introduction", "Welcome"]:
             chapter_order = "0"
         if chapter_order is None:
@@ -361,9 +365,12 @@ def build_course_links_output(course):
     is_chapters_double_digit = len(course["chapters"]) > 9;
     for index, chapter in enumerate(course["chapters"]):
         chapter_title = chapter["title"]
-        chapter_parts = chapter_title.split(". ")
-        chapter_parts = [None]*(2-len(chapter_parts)) + chapter_parts
-        chapter_index, chapter_title = chapter_parts
+        match = re.match(r'^(\d+)\.\s*(.*)', chapter_title)
+        if match:
+            chapter_index = match.group(1)
+            chapter_title = match.group(2)
+        else:
+            chapter_index = None
         if chapter_title in ["Introduction", "Welcome"]:
             chapter_index = 0
         if chapter_index is None:
