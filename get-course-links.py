@@ -42,6 +42,8 @@ def main():
         print("")
         return main()
     
+    os.makedirs("tmp", exist_ok=True)
+    
     # debug: write
     with open("tmp/course.json", "w", encoding="utf8") as json_file:
         json_file.write(json.dumps(course_json_data, indent=4))
