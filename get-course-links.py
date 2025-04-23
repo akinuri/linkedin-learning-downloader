@@ -42,9 +42,17 @@ def main():
         print("")
         return main()
     
+    # debug: write
+    with open("tmp/course.json", "w", encoding="utf8") as json_file:
+        json_file.write(json.dumps(course_json_data, indent=4))
+    
     course_links = collect_json_data(course_json_data)
     load_videos_urls(course_links, course_slug)
     load_html_exercise_file_urls(course_links, course_slug)
+    
+    # debug: write
+    with open("tmp/links.json", "w", encoding="utf8") as json_file:
+        json_file.write(json.dumps(course_links, indent=4))
     
     course_links_output = build_course_links_output(course_links)
     

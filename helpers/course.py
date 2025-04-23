@@ -234,6 +234,8 @@ def load_videos_urls(course, course_slug):
         for video in chapter["videos"]:
             print("    %s" % video["title"])
             video_json_data = get_video_json_data(course_slug, video["slug"])
+            with open(("tmp/video-%s.json" % video["slug"]), "w", encoding="utf8") as video_json_file:
+                video_json_file.write(json.dumps(video_json_data, indent=4))
             video_metadata = video_json_data["elements"][0]["presentation"]["videoPlay"]["videoPlayMetadata"]
             streams = {}
             for _stream in video_metadata["progressiveStreams"]:
