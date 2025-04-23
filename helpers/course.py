@@ -1,4 +1,8 @@
+import json
+import os
+from pprint import pprint
 import re
+import time
 import requests
 from .general import dur_to_sec, dur_to_str, parse_dur_str, prog_exit, sec_to_dur
 
@@ -137,11 +141,15 @@ def build_info_output(course):
 
 #region ==================== VIDEO LINKS
 
+# TODO: set cwd to script dir when called from batch
+
 def get_user_cookies(path = "cookies.txt"):
     cookies = {
         "li_at" : "",
         "JSESSIONID" : "",
     }
+    # pprint.pprint(os.getcwd())
+    # pprint.pprint(os.path.isfile(path))
     with open(path, "r", encoding="utf8") as cookies_file:
         lines = cookies_file.readlines()
         for line in lines:
@@ -233,21 +241,24 @@ def load_videos_urls(course, course_slug):
         print(chapter["title"])
         for video in chapter["videos"]:
             print("    %s" % video["title"])
-            video_json_data = get_video_json_data(course_slug, video["slug"])
-            with open(("tmp/video-%s.json" % video["slug"]), "w", encoding="utf8") as video_json_file:
-                video_json_file.write(json.dumps(video_json_data, indent=4))
-            video_metadata = video_json_data["elements"][0]["presentation"]["videoPlay"]["videoPlayMetadata"]
-            streams = {}
-            for _stream in video_metadata["progressiveStreams"]:
-                streams[ _stream["height"] ] = _stream
-            streams = dict(sorted(streams.items()))
-            transcripts = {}
-            if "transcripts" in video_metadata:
-                for _transcript in video_metadata["transcripts"]:
-                    locale = "%s-%s" % (_transcript["locale"]["language"], _transcript["locale"]["country"])
-                    transcripts[locale] = _transcript
-            video["streams"] = streams
-            video["transcripts"] = transcripts
+            load_video_urls(video, course_slug)
+
+def load_video_urls(video, course_slug):
+    video_json_data = get_video_json_data(course_slug, video["slug"])
+    with open(("tmp/video-%s.json" % video["slug"]), "w", encoding="utf8") as video_json_file:
+        video_json_file.write(json.dumps(video_json_data, indent=4))
+    video_metadata = video_json_data["elements"][0]["presentation"]["videoPlay"]["videoPlayMetadata"]
+    streams = {}
+    for _stream in video_metadata["progressiveStreams"]:
+        streams[ _stream["height"] ] = _stream
+    streams = dict(sorted(streams.items()))
+    transcripts = {}
+    if "transcripts" in video_metadata:
+        for _transcript in video_metadata["transcripts"]:
+            locale = "%s-%s" % (_transcript["locale"]["language"], _transcript["locale"]["country"])
+            transcripts[locale] = _transcript
+    video["streams"] = streams
+    video["transcripts"] = transcripts
 
 def load_html_exercise_file_urls(course, course_slug):
     html = get_course_page_html(course_slug)
@@ -426,6 +437,11 @@ def build_course_links_output(course):
             streams = "\n".join(streams)
             transcripts = []
             for locale, transcript in video["transcripts"].items():
+                # target_transcripts = [
+                #     "en-US",
+                # ]
+                # if locale not in target_transcripts:
+                #     continue
                 transcripts.append(
                     '<a href="%s" download="%s. %s.vtt">%s.vtt</a>' % (
                         transcript["captionFile"],
