@@ -247,6 +247,13 @@ def load_video_urls(video, course_slug):
     video_json_data = get_video_json_data(course_slug, video["slug"])
     with open(("tmp/video-%s.json" % video["slug"]), "w", encoding="utf8") as video_json_file:
         video_json_file.write(json.dumps(video_json_data, indent=4))
+    if "elements" not in video_json_data:
+        if "status" in video_json_data:
+            if video_json_data["status"] == 429:
+                print("[ERROR] Rate limit reached. Will try again in 10 seconds...")
+                time.sleep(10)
+                load_video_urls(video, course_slug)
+                return
     video_metadata = video_json_data["elements"][0]["presentation"]["videoPlay"]["videoPlayMetadata"]
     streams = {}
     for _stream in video_metadata["progressiveStreams"]:
